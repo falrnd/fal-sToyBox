@@ -36,15 +36,6 @@ constexpr bool inside(int y, int x) {
 }
 
 Image display(window_x,window_y,Palette::White);
-Texture texture;
-bool displayUpdated=true;
-const Texture& getTexture(){
-	if(displayUpdated){
-		displayUpdated=false;
-		texture=Texture(display);
-	}
-	return texture;
-}
 
 void updateDistance(const P& p) {
 	std::deque<Point> stack;
@@ -80,17 +71,17 @@ std::vector<P> Points;
 inline void addPoint(const P& p) {
 	Points.emplace_back(p);
 	updateDistance(p);
-
-	displayUpdated=true;
 }
 
 void Main() {
-	Profiler::EnableWarning(false);
-
 	Window::Resize(window_x,window_y);
 	initDistance();
 
 	int c=0;
+
+	DynamicTexture texture=DynamicTexture(display);
+
+	bool updated=false;
 
 	while (System::Update()){
 		if(Input::KeyEnter.clicked){
@@ -105,6 +96,7 @@ void Main() {
 				{Random(window_x-1),Random(window_y-1)},
 				generateRandomColorBlue()
 			});
+			updated=true;
 		}
 
 		if(Input::MouseL.clicked){
@@ -112,8 +104,12 @@ void Main() {
 				Mouse::Pos(),
 				generateRandomColorBlue()
 			});
+			updated=true;
 		}
-
-		getTexture().draw();
+		if(updated){
+			updated=false;
+			texture.fill(display);
+		}
+		texture.draw();
 	}
 }
